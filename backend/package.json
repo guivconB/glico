@@ -1,22 +1,16 @@
 {
-  "name": "glico_backend",
+  "name": "backend",
   "version": "1.0.0",
   "description": "",
-  "keywords": [],
-  "homepage": "https://github.com/guivconB/glico#readme",
-  "bugs": {
-    "url": "https://github.com/guivconB/glico/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/guivconB/glico.git"
-  },
-  "license": "ISC",
-  "author": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
   "dependencies": {
     "dotenv": "^17.3.1",
     "express": "^5.2.1"
