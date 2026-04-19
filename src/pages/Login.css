@@ -1,0 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Gantari:wght@400;500;600;700&display=swap');
+
+.login-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  /* Complex gradient background do design */
+  background: 
+    linear-gradient(to bottom right, rgba(255, 84, 87, 0.98) 0%, rgba(94, 35, 197, 0.99) 25%, #0077FF 50%) bottom right / 50% 50% no-repeat, 
+    linear-gradient(to bottom left, rgba(255, 84, 87, 0.98) 0%, rgba(94, 35, 197, 0.99) 25%, #0077FF 50%) bottom left / 50% 50% no-repeat, 
+    linear-gradient(to top left, rgba(255, 84, 87, 0.98) 0%, rgba(94, 35, 197, 0.99) 25%, #0077FF 50%) top left / 50% 50% no-repeat, 
+    linear-gradient(to top right, rgba(255, 84, 87, 0.98) 0%, rgba(94, 35, 197, 0.99) 25%, #0077FF 50%) top right / 50% 50% no-repeat;
+  font-family: 'Gantari', sans-serif;
+  overflow: hidden;
+}
+
+.login-logo {
+  color: white;
+  font-size: 80px;
+  font-weight: 400;
+  letter-spacing: 15px;
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.login-card {
+  width: 574px;
+  height: 664px;
+  background: #EBEBEB;
+  border-radius: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px;
+  box-sizing: border-box;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.toggle-container {
+  width: 385px;
+  height: 60px;
+  background: linear-gradient(to right, rgba(255, 84, 87, 0.98) 0%, #5E23C5 50%, #0077FF 100%);
+  border-radius: 34.5px;
+  display: flex;
+  position: relative;
+  align-items: center;
+  padding: 6px;
+  box-sizing: border-box;
+  margin-bottom: 40px;
+}
+
+.toggle-btn {
+  flex: 1;
+  height: 48px;
+  border-radius: 30px;
+  border: none;
+  background: transparent;
+  color: #EBEBEB;
+  font-size: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+.toggle-btn.active {
+  background: #EBEBEB;
+  color: black;
+}
+
+.login-content-placeholder {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #888;
+  font-size: 18px;
+  text-align: center;
+  width: 100%;
+  border: 2px dashed #ccc;
+  border-radius: 20px;
+  background-color: rgba(0,0,0,0.02);
+  padding: 20px;
+}
+
+.footer-text {
+  position: absolute;
+  bottom: 30px;
+  text-align: center;
+  color: white;
+  font-size: 20px;
+  font-weight: 400;
+}
