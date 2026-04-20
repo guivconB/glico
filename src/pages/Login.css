@@ -1,21 +1,27 @@
 @import url('https://fonts.googleapis.com/css2?family=Gantari:wght@400;500;600;700&display=swap');
 
 .login-container {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100vw;
   height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  position: relative;
-  /* Complex gradient background do design */
-  background: 
-    linear-gradient(to bottom right, rgba(255, 84, 87, 0.98) 0%, rgba(94, 35, 197, 0.99) 25%, #0077FF 50%) bottom right / 50% 50% no-repeat, 
-    linear-gradient(to bottom left, rgba(255, 84, 87, 0.98) 0%, rgba(94, 35, 197, 0.99) 25%, #0077FF 50%) bottom left / 50% 50% no-repeat, 
-    linear-gradient(to top left, rgba(255, 84, 87, 0.98) 0%, rgba(94, 35, 197, 0.99) 25%, #0077FF 50%) top left / 50% 50% no-repeat, 
-    linear-gradient(to top right, rgba(255, 84, 87, 0.98) 0%, rgba(94, 35, 197, 0.99) 25%, #0077FF 50%) top right / 50% 50% no-repeat;
+  /* Mesmos estilos da introPage */
+  background: radial-gradient(circle at bottom left, #ff5457 0%, #5e23c5 35%, #0077FF 75%);
+  background-size: 150% 150%;
+  animation: gradientPan 12s ease infinite alternate;
   font-family: 'Gantari', sans-serif;
   overflow: hidden;
+  z-index: 9999;
+}
+
+@keyframes gradientPan {
+  0% { background-position: 0% 100%; }
+  100% { background-position: 100% 0%; }
 }
 
 .login-logo {
@@ -29,13 +35,14 @@
 
 .login-card {
   width: 574px;
-  height: 664px;
+  min-height: 664px;
+  height: auto;
   background: #EBEBEB;
   border-radius: 30px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 40px;
+  padding: 50px 40px;
   box-sizing: border-box;
   box-shadow: 0 10px 30px rgba(0,0,0,0.2);
 }
@@ -72,20 +79,90 @@
   color: black;
 }
 
-.login-content-placeholder {
-  flex: 1;
+/* --- 50% do Trabalho --- */
+.welcome-text {
+  font-size: 24px;
+  font-weight: 500;
+  color: black;
+  margin-top: 10px;
+  margin-bottom: 30px;
+}
+
+.input-group {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  color: #888;
-  font-size: 18px;
-  text-align: center;
   width: 100%;
-  border: 2px dashed #ccc;
-  border-radius: 20px;
-  background-color: rgba(0,0,0,0.02);
-  padding: 20px;
+  max-width: 483px;
+  margin-bottom: 20px;
+}
+
+.input-label {
+  font-size: 24px;
+  font-weight: 600;
+  color: black;
+  margin-bottom: 10px;
+  text-align: left;
+  margin-left: 20px;
+}
+
+.input-field {
+  width: 100%;
+  height: 64px;
+  border-radius: 35px;
+  border: 2px solid #C5C5C5;
+  background: transparent;
+  padding: 0 25px;
+  font-size: 24px;
+  font-weight: 400;
+  color: black;
+  box-sizing: border-box;
+  font-family: inherit;
+  outline: none;
+}
+
+.input-field::placeholder {
+  color: #C5C5C5;
+}
+/* ----------------------- */
+.label-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.label-container .input-label {
+  margin-bottom: 0;
+}
+
+.forgot-password {
+  color: black;
+  font-size: 20px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+}
+
+.submit-btn {
+  width: 220px;
+  height: 64px;
+  background: black;
+  color: #EBEBEB;
+  border-radius: 300px;
+  border: none;
+  font-size: 24px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 30px;
+  transition: opacity 0.2s ease;
+}
+
+.submit-btn:hover {
+  opacity: 0.8;
 }
 
 .footer-text {
