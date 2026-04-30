@@ -1,12 +1,14 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-
+import dotenv from 'dotenv';
+dotenv.config();
 const app = express();
 
 app.use(express.json());
 
-const SECRET = "segredo_super_secreto";
+const SECRET = process.env.JWT_SECRET || "fallback_super_secreto";
+console.log("APP RODANDO COM SECRET:", SECRET);
 
 // "banco" temporário
 let usuarios = [];
