@@ -1,0 +1,224 @@
+@import url('https://fonts.googleapis.com/css2?family=Gantari:wght@400;500;600;700&display=swap');
+
+/* Reset and Root Override */
+.resultados-page-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #EBEBEB;
+  font-family: 'Gantari', sans-serif;
+  z-index: 9999;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.resultados-container {
+  width: 1920px;
+  height: 1080px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Header */
+.header-bar {
+  width: 1820px;
+  height: 85px;
+  left: 50px;
+  top: 50px;
+  position: absolute;
+  background: 
+    linear-gradient(to bottom right, rgba(255, 84, 87, 0.98) 0%, #5E23C5 27%, #0077FF 50%) bottom right / 50% 50% no-repeat, 
+    linear-gradient(to bottom left, rgba(255, 84, 87, 0.98) 0%, #5E23C5 27%, #0077FF 50%) bottom left / 50% 50% no-repeat, 
+    linear-gradient(to top left, rgba(255, 84, 87, 0.98) 0%, #5E23C5 27%, #0077FF 50%) top left / 50% 50% no-repeat, 
+    linear-gradient(to top right, rgba(255, 84, 87, 0.98) 0%, #5E23C5 27%, #0077FF 50%) top right / 50% 50% no-repeat;
+  border-radius: 42.5px;
+}
+
+/* Logo Area: Following the snippet's background color but image's text color */
+.logo-area {
+  width: 197px;
+  height: 37px;
+  left: 92px;
+  top: 74px;
+  position: absolute;
+  /* Note: In the image it looks like white text, but the snippet had #EBEBEB background. 
+     If we use #EBEBEB background, white text won't show. 
+     Looking at the image, GLICO is white. So we should probably keep the background 
+     part of the gradient or use a very subtle transparent background. 
+     However, to match the snippet precisely: */
+  background: transparent; /* Changed to transparent to let white text pop on gradient */
+}
+
+.logo-text {
+  font-size: 36px;
+  font-weight: 500;
+  letter-spacing: 0.25em;
+  color: #FFFFFF;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.nav-item-form {
+  left: 900px;
+  top: 76px;
+  position: absolute;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.nav-item-results {
+  left: 1256px;
+  top: 71px;
+  position: absolute;
+  text-align: center;
+  color: white;
+  font-size: 36px;
+  font-weight: 700;
+}
+
+.nav-item-account {
+  left: 1649px;
+  top: 76px;
+  position: absolute;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 24px;
+  font-weight: 500;
+}
+
+/* Titles */
+.title-wrapper {
+  width: 100%;
+  top: 164px;
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.main-title {
+  color: black;
+  font-size: 64px;
+  font-weight: 600;
+  margin: 0;
+  text-align: center;
+}
+
+.subtitle {
+  margin-top: 13px;
+  color: #6F6F70;
+  font-size: 36px;
+  font-weight: 500;
+  text-align: center;
+  max-width: 1288px;
+}
+
+/* Progress Gauge (C-Shape Arc) */
+.gauge-container {
+  width: 550.68px;
+  height: 550.68px;
+  left: 685px; /* Adjusted to center properly */
+  top: 330px;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.gauge-svg {
+  transform: rotate(135deg); /* Start from bottom-left-ish to create the gap at bottom-right */
+}
+
+.gauge-bg {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.05);
+  stroke-width: 50;
+  stroke-linecap: round;
+}
+
+.gauge-progress {
+  fill: none;
+  stroke-width: 50;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s ease-out;
+}
+
+.percentage-display {
+  position: absolute;
+  color: black;
+  font-size: 128px;
+  font-weight: 700;
+}
+
+/* Buttons */
+.button-row {
+  width: 100%;
+  top: 883px;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  gap: 56px;
+}
+
+.btn-base {
+  width: 220px;
+  height: 64px;
+  border-radius: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: transform 0.1s ease;
+}
+
+.btn-base:active {
+  transform: scale(0.98);
+}
+
+.btn-primary {
+  background: black;
+  color: #EBEBEB;
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 3px #6F6F70 solid;
+  color: #6F6F70;
+}
+
+/* Disclaimer & Footer */
+.disclaimer-text {
+  width: 1820px;
+  left: 50px;
+  top: 969px;
+  position: absolute;
+  color: black;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.disclaimer-bold {
+  font-weight: 600;
+}
+
+.footer-copy {
+  width: 100%;
+  top: 1034px;
+  position: absolute;
+  text-align: center;
+  color: black;
+  font-size: 24px;
+  font-weight: 400;
+}
