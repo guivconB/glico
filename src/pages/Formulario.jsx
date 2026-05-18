@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Formulario.css";
 
+const API_URL = 'http://localhost:8000';
+
 const perguntas = [
   { tipo: "simnao", texto: "Você possui pressão alta?" },
   { tipo: "simnao", texto: "Você possui colesterol alto?" },
@@ -24,9 +26,82 @@ export default function Formulario() {
   const navigate = useNavigate();
   const [etapa, setEtapa] = useState(0);
   const [respostas, setRespostas] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const perguntaAtual = perguntas[etapa];
   const progresso = ((etapa + 1) / perguntas.length) * 100;
+
+  const toBoolean = (valor) => valor === 'Sim' || valor === true;
+
+  const mapAgeToCategory = (age) => {
+    const idade = Number(age);
+    if (idade <= 24) return 1;
+    if (idade <= 29) return 2;
+    if (idade <= 34) return 3;
+    if (idade <= 39) return 4;
+    if (idade <= 44) return 5;
+    if (idade <= 49) return 6;
+    if (idade <= 54) return 7;
+    if (idade <= 59) return 8;
+    if (idade <= 64) return 9;
+    if (idade <= 69) return 10;
+    if (idade <= 74) return 11;
+    if (idade <= 79) return 12;
+    return 13;
+  };
+
+  const buildRequestBody = () => {
+    const imc = respostas[2] ?? {};
+    const peso = parseFloat(imc.peso) || 0;
+    const altura = parseFloat(imc.altura) || 0;
+    const alturaM = altura / 100;
+    const bmi = alturaM > 0 ? Number((peso / (alturaM * alturaM)).toFixed(1)) : 0;
+
+    return {
+      high_bp: toBoolean(respostas[0]),
+      high_chol: toBoolean(respostas[1]),
+      weight_kg: peso,
+      height_cm: altura,
+      smoker: toBoolean(respostas[3]),
+      phys_activity: toBoolean(respostas[4]),
+      heart_disease: toBoolean(respostas[5]),
+      stroke: toBoolean(respostas[6]),
+      health_rating: Number(respostas[7]) || 3,
+      mental_unhealthy_days: Number(respostas[8]) || 0,
+      physical_unhealthy_days: Number(respostas[9]) || 0,
+      heavy_alcohol_consumption: toBoolean(respostas[10]),
+      fruits: toBoolean(respostas[11]),
+      veggies: toBoolean(respostas[12]),
+      sex: respostas[13] || 'Masculino',
+      age: Number(respostas[14]) || 18,
+    };
+  };
+
+  const enviarFormulario = async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const body = buildRequestBody();
+      const response = await fetch(`${API_URL}/predict`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.detail || 'Erro ao gerar previsão');
+      }
+
+      navigate('/resultados', { state: { respostas, prediction: data } });
+    } catch (err) {
+      setError(err.message || 'Erro na comunicação com a API preditiva');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const salvarResposta = (valor) => {
     setRespostas({ ...respostas, [etapa]: valor });
@@ -36,8 +111,7 @@ export default function Formulario() {
     if (etapa < perguntas.length - 1) {
       setEtapa(etapa + 1);
     } else {
-      // Última pergunta: navega para resultados passando respostas
-      navigate("/resultados", { state: { respostas } });
+      enviarFormulario();
     }
   };
 
@@ -164,13 +238,14 @@ export default function Formulario() {
       </div>
 
       <div className="botoes-nav">
-        <button onClick={anterior} disabled={etapa === 0}>
+        <button onClick={anterior} disabled={etapa === 0 || loading}>
           Anterior
         </button>
-        <button onClick={proxima}>
-          {etapa === perguntas.length - 1 ? "Ver Resultado" : "Próxima"}
+        <button onClick={proxima} disabled={loading}>
+          {loading ? 'Enviando...' : etapa === perguntas.length - 1 ? 'Ver Resultado' : 'Próxima'}
         </button>
       </div>
+      {error && <p className="formulario-erro">{error}</p>}
     </div>
   );
 }

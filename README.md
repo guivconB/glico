@@ -30,4 +30,16 @@ cd backend
 npm install
 npm start
 ```
-*(Certifique-se de configurar um arquivo `.env` na pasta do backend com a variável `PORT` adequada, caso necessário).*
+*(Certifique-se de configurar um arquivo `.env` na pasta do backend com a variável `PORT` adequada, caso necessário).* 
+
+### 3. Iniciando a API Preditiva Python
+Esta aplicação usa uma API Python separada para executar a predição do modelo.
+```bash
+cd api
+python -m pip install -r requirements.txt
+python train_model.py
+uvicorn predictive_api:app --reload --port 8000
+```
+
+A API ficará disponível em `http://localhost:8000`, com o endpoint de predição em `POST /predict`.
+

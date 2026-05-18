@@ -6,18 +6,17 @@ export default function Resultados() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Recebe as respostas do formulário via state (ou mostra placeholder)
-  const respostas = location.state?.respostas ?? null;
+  const prediction = location.state?.prediction ?? null;
 
-  // Quando o colega integrar a API preditiva, substituir este placeholder
-  const percentage = 67;
-  const label = percentage >= 70 ? 'Alto' : percentage >= 40 ? 'Médio' : 'Baixo';
-  const message =
-    percentage >= 70
+  const percentage = prediction ? prediction.risk_score : 0;
+  const label = prediction ? prediction.risk_label : 'Sem resultado';
+  const message = prediction
+    ? prediction.risk_label === 'Diabetes'
       ? 'Atenção! Você está em alto risco. Consulte um médico.'
-      : percentage >= 40
+      : prediction.risk_label === 'Pré-diabetes'
       ? 'Cuidado, você está entrando numa área de risco! Tome as devidas precauções.'
-      : 'Boa notícia! Seu risco está baixo. Continue com os bons hábitos.';
+      : 'Boa notícia! Seu risco está baixo. Continue com os bons hábitos.'
+    : 'Complete o formulário para ver a previsão.';
 
   // Gauge (arco em C)
   const radius = 90;
@@ -87,6 +86,12 @@ export default function Resultados() {
             <strong>LEMBRE-SE:</strong> Essa previsão é feita através de um modelo treinado com
             dados reais. Serve apenas como referência — consulte sempre um profissional de saúde.
           </p>
+          {prediction && (
+            <div className="prediction-details">
+              <p>Classe prevista: <strong>{prediction.risk_label}</strong></p>
+              <p>Probabilidades: {prediction.probabilities.join(', ')}</p>
+            </div>
+          )}
         </div>
       </main>
 
