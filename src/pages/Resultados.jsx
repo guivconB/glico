@@ -6,17 +6,18 @@ export default function Resultados() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Recebe o resultado retornado pela API ou histórico via state
   const prediction = location.state?.prediction ?? null;
 
-  const percentage = prediction ? prediction.risk_score : 0;
-  const label = prediction ? prediction.risk_label : 'Sem resultado';
-  const message = prediction
-    ? prediction.risk_label === 'Diabetes'
-      ? 'Atenção! Você está em alto risco. Consulte um médico.'
-      : prediction.risk_label === 'Pré-diabetes'
-      ? 'Cuidado, você está entrando numa área de risco! Tome as devidas precauções.'
-      : 'Boa notícia! Seu risco está baixo. Continue com os bons hábitos.'
-    : 'Complete o formulário para ver a previsão.';
+  // Se não houver state (acesso direto), usamos valores padrão demonstrativos
+  const percentage = prediction ? Math.round(prediction.probabilidade * 100) : 67;
+  const risco = prediction ? prediction.risco_predito : 0;
+
+  const label = risco === 1 ? 'Alto' : 'Baixo';
+  const message =
+    risco === 1
+      ? 'Atenção! Sua avaliação indica um alto risco de diabetes tipo 2. Recomendamos fortemente consultar um profissional de saúde para exames detalhados.'
+      : 'Excelente notícia! Sua avaliação indica um baixo risco de diabetes tipo 2. Continue praticando atividade física regular e mantendo hábitos saudáveis!';
 
   // Gauge (arco em C)
   const radius = 90;
@@ -83,15 +84,10 @@ export default function Resultados() {
 
           {/* Disclaimer */}
           <p className="resultados-disclaimer">
-            <strong>LEMBRE-SE:</strong> Essa previsão é feita através de um modelo treinado com
-            dados reais. Serve apenas como referência — consulte sempre um profissional de saúde.
+            <strong>LEMBRE-SE:</strong> Essa previsão é baseada em análises estatísticas estruturadas
+            a partir de dados demográficos e hábitos de saúde. Ela serve apenas como referência educativa e não substitui
+            o diagnóstico clínico de um médico especializado.
           </p>
-          {prediction && (
-            <div className="prediction-details">
-              <p>Classe prevista: <strong>{prediction.risk_label}</strong></p>
-              <p>Probabilidades: {prediction.probabilities.join(', ')}</p>
-            </div>
-          )}
         </div>
       </main>
 

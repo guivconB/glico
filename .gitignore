@@ -27,3 +27,6 @@ dist-ssr
 
 # Arquivos grandes de ML
 artefacts/modelo_glico_diabetes.joblib
+api/*.joblib
+api/__pycache__/
+__pycache__/
