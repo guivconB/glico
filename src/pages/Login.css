@@ -118,6 +118,12 @@
   box-sizing: border-box;
   font-family: inherit;
   outline: none;
+  transition: all 0.2s ease;
+}
+
+.input-field:focus {
+  border-color: #5E23C5;
+  box-shadow: 0 0 0 4px rgba(94, 35, 197, 0.4);
 }
 
 .input-field::placeholder {
@@ -158,11 +164,17 @@
   font-weight: 700;
   cursor: pointer;
   margin-top: 30px;
-  transition: opacity 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .submit-btn:hover {
   opacity: 0.8;
+}
+
+.submit-btn:focus,
+.toggle-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(94, 35, 197, 0.4);
 }
 
 .footer-text {

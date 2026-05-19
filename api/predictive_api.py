@@ -18,7 +18,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=['*'],
     allow_headers=['*'],
-    allow_expose_headers=['*'],
+    expose_headers=['*'],
 )
 
 
@@ -107,7 +107,7 @@ def predict(request: PredictionRequest):
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
-    sex_value = 1 if request.sex.strip().lower().startswith('f') else 0
+    sex_value = 1 if request.sex.strip().lower().startswith('m') else 0
     age_category = map_age_to_category(request.age)
 
     feature_vector = [

@@ -51,6 +51,7 @@ CREATE TABLE IF NOT EXISTS avaliacoes (
   -- Resultado da predição (preenchido pela API preditiva)
   risco_predito   TINYINT(1)  NULL COMMENT '0=Sem risco, 1=Com risco',
   probabilidade   FLOAT       NULL COMMENT 'Probabilidade de risco (ex: 0.82 = 82%)',
+  tipo_predicao   VARCHAR(10) NOT NULL DEFAULT 'ML' COMMENT 'Tipo de predição: ML ou FALLBACK',
 
   FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
 );

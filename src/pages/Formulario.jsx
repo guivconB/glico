@@ -28,13 +28,26 @@ export default function Formulario() {
   const [respostas, setRespostas] = useState({});
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState('');
-  const token = localStorage.getItem('token');
+  const [statusIa, setStatusIa] = useState('offline');
+  const nome = localStorage.getItem('nome');
 
   useEffect(() => {
-    if (!token) {
+    if (!nome) {
       navigate('/login');
+      return;
     }
-  }, [navigate, token]);
+    checkStatusIa();
+  }, [navigate, nome]);
+
+  const checkStatusIa = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/status-preditor`);
+      const data = await res.json();
+      setStatusIa(data.status);
+    } catch {
+      setStatusIa('offline');
+    }
+  };
 
   const perguntaAtual = perguntas[etapa];
   const progresso = ((etapa + 1) / perguntas.length) * 100;
@@ -51,9 +64,37 @@ export default function Formulario() {
       setErro('Por favor, preencha ou selecione uma resposta antes de continuar.');
       return;
     }
-    if (perguntaAtual.tipo === 'imc' && (!respostaAtual.peso || !respostaAtual.altura)) {
-      setErro('Por favor, insira o peso e a altura.');
-      return;
+    if (perguntaAtual.tipo === 'imc') {
+      if (!respostaAtual.peso || !respostaAtual.altura) {
+        setErro('Por favor, insira o peso e a altura.');
+        return;
+      }
+      const peso = Number(respostaAtual.peso);
+      const altura = Number(respostaAtual.altura);
+      if (isNaN(peso) || peso <= 0 || peso > 500) {
+        setErro('Por favor, insira um peso válido (ex: entre 1 e 500 kg).');
+        return;
+      }
+      if (isNaN(altura) || altura <= 0 || altura > 300) {
+        setErro('Por favor, insira uma altura válida em centímetros (ex: entre 30 e 300 cm).');
+        return;
+      }
+    }
+
+    if (perguntaAtual.tipo === 'numero') {
+      const val = Number(respostaAtual);
+      if (isNaN(val) || !Number.isInteger(val) || val < 0 || val > 30) {
+        setErro('Por favor, insira um número inteiro de dias entre 0 e 30.');
+        return;
+      }
+    }
+
+    if (perguntaAtual.tipo === 'idade') {
+      const val = Number(respostaAtual);
+      if (isNaN(val) || !Number.isInteger(val) || val < 0 || val > 120) {
+        setErro('Por favor, insira uma idade inteira válida entre 0 e 120 anos.');
+        return;
+      }
     }
 
     setErro('');
@@ -67,10 +108,10 @@ export default function Formulario() {
         const response = await fetch(`${API_URL}/api/avaliacoes`, {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
+            "Content-Type": "application/json"
           },
-          body: JSON.stringify({ respostas })
+          body: JSON.stringify({ respostas }),
+          credentials: 'include'
         });
         const data = await response.json();
         if (!response.ok) {
@@ -79,7 +120,7 @@ export default function Formulario() {
         }
         // Navega para resultados passando o objeto retornado do MySQL
         navigate("/resultados", { state: { prediction: data } });
-      } catch (err) {
+      } catch {
         setErro("Não foi possível conectar ao servidor. Verifique sua conexão.");
       } finally {
         setCarregando(false);
@@ -191,11 +232,19 @@ export default function Formulario() {
     <div className="formulario-page">
       <header className="topo">
         <div className="logo">GLICO</div>
-        <nav>
-          <Link to="/dashboard">Dashboard</Link>
-          <Link to="/formulario" className="ativo">Formulário</Link>
-          <Link to="/resultados">Resultados</Link>
-        </nav>
+        <div className="topo-right">
+          <nav>
+            <Link to="/dashboard">Dashboard</Link>
+            <Link to="/formulario" className="ativo">Formulário</Link>
+            <Link to="/resultados">Resultados</Link>
+          </nav>
+          <div className="status-ia-container">
+            <span className={`status-ia-dot ${statusIa === 'ativo' ? 'online' : 'offline'}`} />
+            <span className="status-ia-text">
+              {statusIa === 'ativo' ? 'Serviço de IA Ativo' : 'Serviço de IA em Fallback'}
+            </span>
+          </div>
+        </div>
       </header>
 
       <div className="barra-container">
@@ -206,7 +255,7 @@ export default function Formulario() {
         {etapa + 1} de {perguntas.length}
       </p>
 
-      <div className="pergunta-box">
+      <div key={etapa} className="pergunta-box animate-fade-in">
         <p className="questao">Questão {etapa + 1}</p>
         <h2>{perguntaAtual.texto}</h2>
         {renderPergunta()}

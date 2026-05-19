@@ -19,6 +19,11 @@ const Login = () => {
 
   const trocarAba = (paraLogin) => { setIsLogin(paraLogin); limparMensagens(); };
 
+  const handleForgotPassword = (e) => {
+    e.preventDefault();
+    alert('Para redefinir sua senha, entre em contato com o suporte do sistema através do e-mail: suporte@glico.com.br');
+  };
+
   // ── LOGIN ──────────────────────────────────────────────
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -31,11 +36,11 @@ const Login = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(loginData),
+        credentials: 'include',
       });
       const data = await response.json();
       if (!response.ok) { setErro(data.erro || 'Erro ao fazer login.'); return; }
 
-      localStorage.setItem('token', data.token);
       localStorage.setItem('nome', data.nome);
       navigate('/dashboard');
     } catch {
@@ -58,6 +63,7 @@ const Login = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(registerData),
+        credentials: 'include',
       });
       const data = await response.json();
       if (!response.ok) { setErro(data.erro || 'Erro ao criar conta.'); return; }
@@ -96,7 +102,7 @@ const Login = () => {
             <div className="input-group">
               <div className="label-container">
                 <label className="input-label">Senha</label>
-                <a href="#" className="forgot-password">Esqueceu a sua senha?</a>
+                <a href="#forgot" onClick={handleForgotPassword} className="forgot-password">Esqueceu a sua senha?</a>
               </div>
               <input type="password" className="input-field" placeholder="Insira sua senha"
                 value={loginData.senha} onChange={(e) => setLoginData({ ...loginData, senha: e.target.value })} />

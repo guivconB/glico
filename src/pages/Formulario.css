@@ -37,6 +37,12 @@
   color: #fff;
 }
 
+.topo-right {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
 .topo nav {
   display: flex;
   gap: 32px;
@@ -245,4 +251,34 @@
 .botoes-nav button:last-child:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* ── Keyboard Focus Glow and Premium Styling ── */
+.opcoes button:focus,
+.escala button:focus,
+.botoes-nav button:focus,
+.formulario-page input[type="number"]:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(94, 35, 197, 0.4), 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.opcoes button.selecionado:focus,
+.escala button.selecionado:focus {
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.4), 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* ── Typeform-style smooth step transition animation ── */
+.animate-fade-in {
+  animation: typeformFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes typeformFade {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

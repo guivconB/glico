@@ -12,6 +12,7 @@ export default function Resultados() {
   // Se não houver state (acesso direto), usamos valores padrão demonstrativos
   const percentage = prediction ? Math.round(prediction.probabilidade * 100) : 67;
   const risco = prediction ? prediction.risco_predito : 0;
+  const tipoPredicao = prediction?.tipo_predicao ?? 'ML';
 
   const label = risco === 1 ? 'Alto' : 'Baixo';
   const message =
@@ -80,6 +81,14 @@ export default function Resultados() {
             <button className="btn-solid" onClick={() => navigate('/dashboard')}>
               Ver Dashboard
             </button>
+          </div>
+
+          <div className="prediction-tech-badge">
+            {tipoPredicao === 'ML' ? (
+              <span>Tecnologia Utilizada: <strong>Inteligência Artificial (Machine Learning)</strong> ✨</span>
+            ) : (
+              <span>Tecnologia Utilizada: <strong>Heurística Clínica (Modo de Fallback)</strong> ⚙️</span>
+            )}
           </div>
 
           {/* Disclaimer */}

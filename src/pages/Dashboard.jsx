@@ -8,29 +8,39 @@ export default function Dashboard() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const token = localStorage.getItem('token');
-  const nome = localStorage.getItem('nome') || 'Usuário';
+  const nome = localStorage.getItem('nome');
 
   const [historico, setHistorico] = useState([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState('');
+  const [statusIa, setStatusIa] = useState('offline');
 
   useEffect(() => {
-    if (!token) {
+    if (!nome) {
       navigate('/login');
       return;
     }
     fetchHistorico();
-  }, [navigate, token]);
+    checkStatusIa();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigate, nome]);
+
+  const checkStatusIa = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/status-preditor`);
+      const data = await res.json();
+      setStatusIa(data.status);
+    } catch {
+      setStatusIa('offline');
+    }
+  };
 
   const fetchHistorico = async () => {
     setLoading(true);
     setErro('');
     try {
       const response = await fetch(`${API_URL}/api/avaliacoes`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include'
       });
       if (!response.ok) {
         if (response.status === 401) {
@@ -42,15 +52,22 @@ export default function Dashboard() {
       }
       const data = await response.json();
       setHistorico(data);
-    } catch (err) {
+    } catch {
       setErro('Erro de conexão ao carregar histórico.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
+  const handleLogout = async () => {
+    try {
+      await fetch(`${API_URL}/api/auth/logout`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch (err) {
+      console.warn('Erro ao deslogar no backend:', err);
+    }
     localStorage.removeItem('nome');
     navigate('/login');
   };
@@ -72,7 +89,15 @@ export default function Dashboard() {
           <Link to="/resultados" className={`nav-link ${location.pathname === '/resultados' ? 'active' : ''}`}>Resultados</Link>
           <Link to="/dashboard"  className={`nav-link ${location.pathname === '/dashboard'  ? 'active' : ''}`}>Dashboard</Link>
         </nav>
-        <button className="logout-btn" onClick={handleLogout}>Sair</button>
+        <div className="dashboard-header-right">
+          <div className="status-ia-container">
+            <span className={`status-ia-dot ${statusIa === 'ativo' ? 'online' : 'offline'}`} />
+            <span className="status-ia-text">
+              {statusIa === 'ativo' ? 'Serviço de IA Ativo' : 'Serviço de IA em Fallback'}
+            </span>
+          </div>
+          <button className="logout-btn" onClick={handleLogout}>Sair</button>
+        </div>
       </header>
 
       <main className="dashboard-main">

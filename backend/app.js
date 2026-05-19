@@ -8,6 +8,19 @@ const app = express();
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 app.use(express.json());
 
+// Custom light cookie-parser middleware (no external dependencies)
+app.use((req, res, next) => {
+  req.cookies = {};
+  const cookieHeader = req.headers.cookie || '';
+  cookieHeader.split(';').forEach(cookie => {
+    const parts = cookie.split('=');
+    if (parts.length === 2) {
+      req.cookies[parts[0].trim()] = parts[1].trim();
+    }
+  });
+  next();
+});
+
 const SECRET = process.env.JWT_SECRET || "fallback_super_secreto";
 
 // Colleague's FastAPI python server runs on port 8000
@@ -73,7 +86,7 @@ async function fetchPrediction(payload) {
     const age_category = mapAgeToCategory(payload.age);
     const height_m = payload.height_cm / 100;
     const bmi = height_m > 0 ? (payload.weight_kg / (height_m * height_m)) : 22;
-    return calculateLocalPrediction({
+    const localResult = calculateLocalPrediction({
       high_bp: payload.high_bp,
       high_chol: payload.high_chol,
       bmi,
@@ -84,6 +97,7 @@ async function fetchPrediction(payload) {
       gen_hlth: payload.health_rating,
       age_category
     });
+    return { ...localResult, tipo_predicao: 'FALLBACK', age_category };
   }
 
   try {
@@ -98,7 +112,7 @@ async function fetchPrediction(payload) {
       const age_category = mapAgeToCategory(payload.age);
       const height_m = payload.height_cm / 100;
       const bmi = height_m > 0 ? (payload.weight_kg / (height_m * height_m)) : 22;
-      return calculateLocalPrediction({
+      const localResult = calculateLocalPrediction({
         high_bp: payload.high_bp,
         high_chol: payload.high_chol,
         bmi,
@@ -109,12 +123,12 @@ async function fetchPrediction(payload) {
         gen_hlth: payload.health_rating,
         age_category
       });
+      return { ...localResult, tipo_predicao: 'FALLBACK', age_category };
     }
 
     const data = await response.json();
     // FastAPI returns:
-    // { "risk_class": 0/1/2, "risk_score": 85, "probabilities": [0.85, 0.10, 0.05], ... }
-    // Let's extract the probability of pre-diabetes/diabetes (non-healthy classes)
+    // { "risk_class": 0/1/2, "risk_score": 85, "probabilities": [0.85, 0.10, 0.05], "age_category": 9, ... }
     let probabilidade = 0.5;
     if (data.probabilities && data.probabilities.length >= 3) {
       // prob of pre-diabetes + diabetes
@@ -125,14 +139,15 @@ async function fetchPrediction(payload) {
 
     // risco_predito is 1 if class is 1 (pre-diabetes) or 2 (diabetes), otherwise 0
     const risco_predito = data.risk_class > 0 ? 1 : 0;
+    const age_category = data.age_category || mapAgeToCategory(payload.age);
 
-    return { risco_predito, probabilidade };
+    return { risco_predito, probabilidade, tipo_predicao: 'ML', age_category };
   } catch (error) {
     console.warn('Falha de conexão com FastAPI preditor, usando fallback local:', error.message || error);
     const age_category = mapAgeToCategory(payload.age);
     const height_m = payload.height_cm / 100;
     const bmi = height_m > 0 ? (payload.weight_kg / (height_m * height_m)) : 22;
-    return calculateLocalPrediction({
+    const localResult = calculateLocalPrediction({
       high_bp: payload.high_bp,
       high_chol: payload.high_chol,
       bmi,
@@ -143,6 +158,7 @@ async function fetchPrediction(payload) {
       gen_hlth: payload.health_rating,
       age_category
     });
+    return { ...localResult, tipo_predicao: 'FALLBACK', age_category };
   }
 }
 
@@ -150,11 +166,18 @@ async function fetchPrediction(payload) {
 // MIDDLEWARE: Verificação de JWT
 // ======================================================
 function auth(req, res, next) {
-  const header = req.headers.authorization;
-  if (!header) {
-    return res.status(401).json({ erro: "Token não fornecido" });
+  let token = req.cookies?.token;
+  if (!token && req.headers.authorization) {
+    const parts = req.headers.authorization.split(" ");
+    if (parts.length === 2 && parts[0] === "Bearer") {
+      token = parts[1];
+    }
   }
-  const token = header.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({ erro: "Token não fornecido ou expirado" });
+  }
+
   try {
     const decoded = jwt.verify(token, SECRET);
     req.usuario = decoded;
@@ -224,11 +247,31 @@ app.post('/api/auth/login', async (req, res) => {
       { expiresIn: '8h' }
     );
 
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    });
+
     res.json({ token, nome: usuario.nome });
   } catch (err) {
     console.error("Erro no login:", err);
     res.status(500).json({ erro: "Erro interno no servidor" });
   }
+});
+
+// ======================================================
+// POST /api/auth/logout — Limpa o cookie de sessão
+// ======================================================
+app.post('/api/auth/logout', (req, res) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/'
+  });
+  res.json({ mensagem: "Deslogado com sucesso" });
 });
 
 // ======================================================
@@ -269,6 +312,17 @@ app.post('/api/avaliacoes', auth, async (req, res) => {
     const sex = respostas['13'] || 'Masculino';
     const age = Number(respostas['14'] || 18);
 
+    // Server-side validation to prevent corrupt data entry or FastAPI 422 crash
+    if (
+      isNaN(ment_hlth) || ment_hlth < 0 || ment_hlth > 30 || !Number.isInteger(ment_hlth) ||
+      isNaN(phys_hlth) || phys_hlth < 0 || phys_hlth > 30 || !Number.isInteger(phys_hlth) ||
+      isNaN(age) || age < 0 || age > 120 || !Number.isInteger(age) ||
+      isNaN(peso) || peso <= 0 || peso > 500 ||
+      isNaN(alturaCm) || alturaCm <= 0 || alturaCm > 300
+    ) {
+      return res.status(400).json({ erro: "Valores de entrada inválidos ou fora dos limites permitidos." });
+    }
+
     // Build the request body for FastAPI
     const payload = {
       high_bp,
@@ -290,12 +344,11 @@ app.post('/api/avaliacoes', auth, async (req, res) => {
     };
 
     // 2. Fetch ML prediction from Python FastAPI
-    const { risco_predito, probabilidade } = await fetchPrediction(payload);
+    const { risco_predito, probabilidade, tipo_predicao, age_category } = await fetchPrediction(payload);
 
-    // Recalculate BMI and Age Category for local SQL storage
+    // Recalculate BMI for local SQL storage
     const alturaM = alturaCm / 100;
     const bmi = alturaM > 0 ? parseFloat((peso / (alturaM * alturaM)).toFixed(2)) : 0;
-    const age_category = mapAgeToCategory(age);
 
     // 3. Save to MySQL database
     await pool.query(`
@@ -303,8 +356,8 @@ app.post('/api/avaliacoes', auth, async (req, res) => {
         usuario_id, high_bp, high_chol, bmi, smoker, phys_activity,
         heart_disease, stroke, gen_hlth, ment_hlth, phys_hlth,
         heavy_alcohol, fruits, veggies, sex, age_category,
-        risco_predito, probabilidade
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        risco_predito, probabilidade, tipo_predicao
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
       req.usuario.id,
       high_bp ? 1 : 0,
@@ -323,13 +376,15 @@ app.post('/api/avaliacoes', auth, async (req, res) => {
       sex === 'Masculino' ? 1 : 0,
       age_category,
       risco_predito,
-      probabilidade
+      probabilidade,
+      tipo_predicao
     ]);
 
     res.status(201).json({
       mensagem: "Avaliação registrada com sucesso!",
       risco_predito,
-      probabilidade
+      probabilidade,
+      tipo_predicao
     });
   } catch (err) {
     console.error("Erro ao registrar avaliação:", err);
@@ -372,6 +427,28 @@ app.get('/api/avaliacoes/:id', auth, async (req, res) => {
   } catch (err) {
     console.error("Erro ao obter avaliação:", err);
     res.status(500).json({ erro: "Erro ao buscar detalhes da avaliação." });
+  }
+});
+
+// ======================================================
+// GET /api/status-preditor — Checa se a API de IA está ativa
+// ======================================================
+app.get('/api/status-preditor', async (req, res) => {
+  if (!PREDICTOR_URL) {
+    return res.json({ status: 'offline' });
+  }
+  try {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), 1500); // 1.5s timeout for fast response
+    const response = await fetch(PREDICTOR_URL, { signal: controller.signal });
+    clearTimeout(id);
+    if (response.ok) {
+      return res.json({ status: 'ativo' });
+    }
+    return res.json({ status: 'offline' });
+  } catch (err) {
+    console.error("Erro na checagem de status da IA:", err);
+    return res.json({ status: 'offline' });
   }
 });
 
