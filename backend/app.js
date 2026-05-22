@@ -101,11 +101,16 @@ async function fetchPrediction(payload) {
   }
 
   try {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), 8000); // 8s timeout
+
     const response = await fetch(`${PREDICTOR_URL}/predict`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      signal: controller.signal
     });
+    clearTimeout(id);
 
     if (!response.ok) {
       console.warn('FastAPI preditor retornou status não OK, usando fallback local.');
@@ -314,6 +319,7 @@ app.post('/api/avaliacoes', auth, async (req, res) => {
 
     // Server-side validation to prevent corrupt data entry or FastAPI 422 crash
     if (
+      isNaN(gen_hlth) || gen_hlth < 1 || gen_hlth > 5 || !Number.isInteger(gen_hlth) ||
       isNaN(ment_hlth) || ment_hlth < 0 || ment_hlth > 30 || !Number.isInteger(ment_hlth) ||
       isNaN(phys_hlth) || phys_hlth < 0 || phys_hlth > 30 || !Number.isInteger(phys_hlth) ||
       isNaN(age) || age < 0 || age > 120 || !Number.isInteger(age) ||
