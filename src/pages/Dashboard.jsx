@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'; // <-- NOVO IMPORT
 import './Dashboard.css';
 
 const API_URL = 'http://localhost:3001';
@@ -11,6 +12,7 @@ export default function Dashboard() {
   const nome = localStorage.getItem('nome');
 
   const [historico, setHistorico] = useState([]);
+  const [dadosGrafico, setDadosGrafico] = useState([]); // <-- NOVO ESTADO
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState('');
   const [statusIa, setStatusIa] = useState('offline');
@@ -21,6 +23,7 @@ export default function Dashboard() {
       return;
     }
     fetchHistorico();
+    fetchDadosGrafico(); // <-- NOVA CHAMADA
     checkStatusIa();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate, nome]);
@@ -59,6 +62,35 @@ export default function Dashboard() {
     }
   };
 
+  // <-- NOVA FUNÇÃO PARA O GRÁFICO
+  const fetchDadosGrafico = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/avaliacoes/historico`, {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Dica de Ouro: Formatando a data e os valores
+        const formatado = data.map(item => {
+          const dataObj = new Date(item.data_avaliacao);
+          // Pega o dia com 2 dígitos e o mês abreviado (ex: 12/mai)
+          const dataLabel = `${dataObj.getDate().toString().padStart(2, '0')}/${dataObj.toLocaleString('pt-BR', { month: 'short' }).replace('.', '')}`;
+          
+          return {
+            dataStr: dataLabel,
+            Risco: Math.round(item.probabilidade * 100), // Risco em %
+            IMC: item.bmi // IMC direto do banco
+          };
+        });
+        
+        setDadosGrafico(formatado);
+      }
+    } catch (err) {
+      console.warn("Erro ao carregar dados do gráfico", err);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await fetch(`${API_URL}/api/auth/logout`, {
@@ -72,7 +104,6 @@ export default function Dashboard() {
     navigate('/login');
   };
 
-  // Get the latest prediction from MySQL history if exists
   const temAvaliacao = historico.length > 0;
   const ultima = temAvaliacao ? historico[0] : null;
   const ultimaPorcentagem = ultima ? Math.round(ultima.probabilidade * 100) : null;
@@ -108,6 +139,7 @@ export default function Dashboard() {
 
         {/* Health Cards */}
         <section className="health-cards-grid">
+          {/* ... [Seus cards antigos continuam exatamente iguais aqui] ... */}
           <div className="glass-card health-card">
             <span className="card-title">Última Previsão</span>
             {temAvaliacao ? (
@@ -153,9 +185,40 @@ export default function Dashboard() {
           </div>
         </section>
 
+        {/* NOVO: Seção do Gráfico de Evolução (Só aparece se tiver mais de 1 avaliação) */}
+        {dadosGrafico.length > 1 && (
+          <section className="chart-section" style={{ marginTop: '40px', padding: '24px', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '16px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+            <h2 style={{ marginBottom: '20px' }}>Evolução de Risco e IMC 📈</h2>
+            <div style={{ width: '100%', height: 350 }}>
+              <ResponsiveContainer>
+                <LineChart data={dadosGrafico} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.2)" vertical={false} />
+                  <XAxis dataKey="dataStr" stroke="#fff" tick={{ fill: '#fff', fontSize: 14 }} tickMargin={10} />
+                  <YAxis stroke="#fff" tick={{ fill: '#fff', fontSize: 14 }} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: 'rgba(20, 20, 30, 0.9)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', color: '#fff', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}
+                    itemStyle={{ color: '#fff', fontWeight: 'bold' }}
+                    cursor={{ stroke: 'rgba(255,255,255,0.2)', strokeWidth: 2 }}
+                  />
+                  <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                  <Line type="monotone" dataKey="Risco" name="Risco (%)" stroke="#ff5457" strokeWidth={4} activeDot={{ r: 8, stroke: '#fff', strokeWidth: 2 }} dot={{ r: 4, fill: '#ff5457' }} />
+                  <Line type="monotone" dataKey="IMC" name="IMC" stroke="#00d2ff" strokeWidth={4} dot={{ r: 4, fill: '#00d2ff' }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            
+            <div style={{ marginTop: '20px', padding: '15px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '12px', fontSize: '14px', lineHeight: '1.6' }}>
+              <strong style={{ color: '#ff5457' }}>🔴 Risco (%):</strong> Indica a probabilidade calculada pela IA de desenvolver a condição de saúde no período avaliado. Valores mais altos (próximos a 100%) indicam risco crítico.
+              <br />
+              <strong style={{ color: '#00d2ff', marginTop: '5px', display: 'block' }}>🔵 IMC (Índice de Massa Corporal):</strong> Medida padronizada mundialmente para classificar faixas de peso corporal. Manter o IMC estável reduz significativamente o Risco (%).
+            </div>
+          </section>
+        )}
+
         {/* Recent History */}
-        <section className="history-section">
+        <section className="history-section" style={{ marginTop: '40px' }}>
           <h2>Histórico Recente</h2>
+          {/* ... [Seu código antigo do histórico contínua aqui exatamente igual] ... */}
           {erro && <p className="msg-erro" style={{ color: '#ffb74d' }}>{erro}</p>}
           {loading ? (
             <p style={{ color: 'rgba(255,255,255,0.7)' }}>Carregando histórico...</p>
@@ -189,7 +252,7 @@ export default function Dashboard() {
                     </div>
                     <button 
                       className="history-btn" 
-                      onClick={() => navigate('/resultados', { state: { prediction: { risco_predito: item.risco_predito, probabilidade: item.probabilidade } } })}
+                      onClick={() => navigate('/resultados', { state: { prediction: { risco_predito: item.risco_predito, probabilidade: item.probabilidade, explicacao: item.explicacao } } })}
                     >
                       Ver Detalhes
                     </button>

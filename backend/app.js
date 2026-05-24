@@ -145,8 +145,9 @@ async function fetchPrediction(payload) {
     // risco_predito is 1 if class is 1 (pre-diabetes) or 2 (diabetes), otherwise 0
     const risco_predito = data.risk_class > 0 ? 1 : 0;
     const age_category = data.age_category || mapAgeToCategory(payload.age);
+    const explicacao = data.explicacao || ["Análise de fatores indisponível."];
 
-    return { risco_predito, probabilidade, tipo_predicao: 'ML', age_category };
+    return { risco_predito, probabilidade, tipo_predicao: 'ML', age_category, explicacao };
   } catch (error) {
     console.warn('Falha de conexão com FastAPI preditor, usando fallback local:', error.message || error);
     const age_category = mapAgeToCategory(payload.age);
@@ -350,8 +351,7 @@ app.post('/api/avaliacoes', auth, async (req, res) => {
     };
 
     // 2. Fetch ML prediction from Python FastAPI
-    const { risco_predito, probabilidade, tipo_predicao, age_category } = await fetchPrediction(payload);
-
+const { risco_predito, probabilidade, tipo_predicao, age_category, explicacao } = await fetchPrediction(payload);
     // Recalculate BMI for local SQL storage
     const alturaM = alturaCm / 100;
     const bmi = alturaM > 0 ? parseFloat((peso / (alturaM * alturaM)).toFixed(2)) : 0;
@@ -362,8 +362,8 @@ app.post('/api/avaliacoes', auth, async (req, res) => {
         usuario_id, high_bp, high_chol, bmi, smoker, phys_activity,
         heart_disease, stroke, gen_hlth, ment_hlth, phys_hlth,
         heavy_alcohol, fruits, veggies, sex, age_category,
-        risco_predito, probabilidade, tipo_predicao
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        risco_predito, probabilidade, tipo_predicao, explicacao
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
       req.usuario.id,
       high_bp ? 1 : 0,
@@ -383,14 +383,16 @@ app.post('/api/avaliacoes', auth, async (req, res) => {
       age_category,
       risco_predito,
       probabilidade,
-      tipo_predicao
+      tipo_predicao,
+      JSON.stringify(explicacao)
     ]);
 
     res.status(201).json({
       mensagem: "Avaliação registrada com sucesso!",
       risco_predito,
       probabilidade,
-      tipo_predicao
+      tipo_predicao,
+      explicacao // <-- ENVIANDO PARA O REACT AQUI
     });
   } catch (err) {
     console.error("Erro ao registrar avaliação:", err);
@@ -411,6 +413,21 @@ app.get('/api/avaliacoes', auth, async (req, res) => {
   } catch (err) {
     console.error("Erro ao buscar histórico:", err);
     res.status(500).json({ erro: "Erro ao buscar histórico do banco de dados." });
+  }
+});
+// ======================================================
+// GET /api/avaliacoes/historico — Dados para o Gráfico (Ordem Crescente)
+// ======================================================
+app.get('/api/avaliacoes/historico', auth, async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      'SELECT * FROM avaliacoes WHERE usuario_id = ? ORDER BY data_avaliacao ASC LIMIT 10',
+      [req.usuario.id]
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error("Erro ao buscar histórico para o gráfico:", err);
+    res.status(500).json({ erro: "Erro ao buscar histórico do gráfico no banco de dados." });
   }
 });
 

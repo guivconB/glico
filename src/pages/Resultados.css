@@ -216,3 +216,9 @@
   outline: none;
   box-shadow: 0 0 0 4px rgba(94, 35, 197, 0.4);
 }
+
+/* SHAP UI fix for light theme */
+.impact-factors-list { padding: 0; margin: 15px 0; list-style: none; }
+.impact-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 15px; }
+.btn-pdf { background-color: #28a745; border-color: #28a745; }
+.btn-pdf:hover { background-color: #218838; }
