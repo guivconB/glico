@@ -53,20 +53,23 @@ function mapAgeToCategory(age) {
 // ======================================================
 function calculateLocalPrediction(features) {
   let score = 0;
-  if (features.high_bp) score += 25;
-  if (features.high_chol) score += 15;
-  if (features.bmi > 25) score += 10;
-  if (features.bmi > 30) score += 15;
-  if (features.smoker) score += 5;
-  if (features.heart_disease) score += 15;
-  if (features.stroke) score += 10;
+  let explicacoes = [];
+  if (features.high_bp) { score += 25; explicacoes.push("Pressão Alta (Alerta de Heurística Local)"); }
+  if (features.high_chol) { score += 15; explicacoes.push("Colesterol Elevado (Alerta de Heurística Local)"); }
+  if (features.bmi > 30) { score += 15; explicacoes.push("IMC compatível com Obesidade (Alerta de Heurística Local)"); }
+  else if (features.bmi > 25) { score += 10; explicacoes.push("IMC compatível com Sobrepeso (Alerta de Heurística Local)"); }
+  if (features.smoker) { score += 5; explicacoes.push("Tabagismo (Alerta de Heurística Local)"); }
+  if (features.heart_disease) { score += 15; explicacoes.push("Condição Cardíaca Prévia (Alerta de Heurística Local)"); }
+  if (features.stroke) { score += 10; explicacoes.push("Histórico de AVC (Alerta de Heurística Local)"); }
   if (features.heavy_alcohol) score += 5;
   
   // general health score (1 to 5)
   score += (features.gen_hlth - 1) * 8;
+  if (features.gen_hlth >= 4) explicacoes.push("Saúde Geral Auto-relatada Ruim (Alerta Local)");
   
   // age category impact
   score += (features.age_category * 2.5);
+  if (features.age_category >= 9) explicacoes.push("Fator de Idade Avançada (Alerta Local)");
 
   if (score > 100) score = 100;
   if (score < 5) score = 5;
@@ -74,7 +77,12 @@ function calculateLocalPrediction(features) {
   const probabilidade = parseFloat((score / 100).toFixed(2));
   const risco_predito = probabilidade >= 0.5 ? 1 : 0;
 
-  return { risco_predito, probabilidade };
+  let explicacaoFinal = explicacoes.slice(0, 3);
+  if (explicacaoFinal.length === 0) {
+    explicacaoFinal = ["Seus exames base passaram pela triagem de segurança local sem alertas críticos."];
+  }
+
+  return { risco_predito, probabilidade, explicacao: explicacaoFinal };
 }
 
 // ======================================================

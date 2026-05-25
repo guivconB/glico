@@ -31,7 +31,7 @@ export default function IntroPage() {
           </h1>
           
           <div style={{
-            maxWidth: '800px',
+            maxWidth: '900px',
             background: 'rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(10px)',
             padding: '40px',
@@ -41,11 +41,14 @@ export default function IntroPage() {
             color: '#FFF',
             marginBottom: '40px'
           }}>
-            <p style={{ fontSize: '1.4rem', fontWeight: '400', marginBottom: '20px' }}>
-              O projeto <strong>GLICO</strong> nasceu com o objetivo de transformar a forma como as pessoas interagem com a sua própria saúde. Acreditamos que a prevenção é o caminho mais eficaz para o combate à Diabetes.
+            <p style={{ fontSize: '1.3rem', fontWeight: '400', marginBottom: '20px' }}>
+              O projeto <strong>GLICO</strong> nasceu com o objetivo de ajudar pessoas a entenderem suas tendências de saúde através da análise de dados. Ele atua como um <strong>Navegador de Risco Analítico</strong>, cruzando suas respostas com padrões encontrados em um banco de dados real do CDC (Centers for Disease Control and Prevention) dos EUA.
             </p>
-            <p style={{ fontSize: '1.4rem', fontWeight: '400' }}>
-              Nossa plataforma utiliza análise preditiva e inteligência de dados para oferecer uma visão proativa e acessível. Queremos capacitar indivíduos com conhecimento e ferramentas para que possam tomar decisões melhores!
+            <p style={{ fontSize: '1.3rem', fontWeight: '400', marginBottom: '20px' }}>
+              <span style={{color: '#ff5457', fontWeight: 'bold'}}>IMPORTANTE:</span> O GLICO <strong>não</strong> é uma ferramenta de diagnóstico clínico e <strong>não</strong> substitui a consulta médica presencial. Seu papel é meramente informativo, destacando fatores de atenção (como IMC elevado ou Tabagismo) que podem contribuir para o risco de diabetes tipo 2 ao longo dos anos.
+            </p>
+            <p style={{ fontSize: '1.3rem', fontWeight: '400' }}>
+              Recomendamos o uso do GLICO de forma <strong>esporádica</strong> — por exemplo, a cada 6 ou 12 meses — como um lembrete interativo para reavaliar seus hábitos e marcar exames de rotina com um especialista.
             </p>
           </div>
 

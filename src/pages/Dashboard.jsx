@@ -16,6 +16,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState('');
   const [statusIa, setStatusIa] = useState('offline');
+  const [showTerms, setShowTerms] = useState(false);
 
   useEffect(() => {
     if (!nome) {
@@ -179,9 +180,9 @@ export default function Dashboard() {
           <div className="glass-card health-card">
             <span className="card-title">Próximo Passo</span>
             <p style={{ margin: 0, fontSize: '16px', lineHeight: '1.5' }}>
-              Responda o formulário para atualizar sua avaliação de risco de diabetes.
+              Recomendamos que você repita a avaliação a cada 6 ou 12 meses para acompanhar a evolução do seu risco ao longo do tempo.
             </p>
-            <Link to="/formulario" className="card-action-btn">Iniciar Avaliação →</Link>
+            <button onClick={() => setShowTerms(true)} className="card-action-btn" style={{ border: 'none', cursor: 'pointer' }}>Iniciar Avaliação →</button>
           </div>
         </section>
 
@@ -225,7 +226,7 @@ export default function Dashboard() {
           ) : !temAvaliacao ? (
             <div className="glass-card" style={{ padding: '24px', textAlign: 'center' }}>
               <p style={{ margin: '0 0 16px', color: 'rgba(255,255,255,0.8)' }}>Você ainda não realizou nenhuma avaliação de saúde.</p>
-              <Link to="/formulario" className="card-action-btn" style={{ margin: '0 auto' }}>Fazer Primeira Avaliação</Link>
+              <button onClick={() => setShowTerms(true)} className="card-action-btn" style={{ margin: '0 auto', border: 'none', cursor: 'pointer' }}>Fazer Primeira Avaliação</button>
             </div>
           ) : (
             <div className="history-list">
@@ -263,6 +264,50 @@ export default function Dashboard() {
           )}
         </section>
       </main>
+
+      {/* MODAL DE TERMOS DE USO */}
+      {showTerms && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+          backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)',
+          display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000,
+          padding: '20px', boxSizing: 'border-box'
+        }}>
+          <div style={{
+            background: '#1e1e2f', borderRadius: '16px', padding: '30px',
+            maxWidth: '600px', width: '100%', border: '1px solid rgba(255,255,255,0.1)',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.5)', color: '#fff'
+          }}>
+            <h2 style={{ margin: '0 0 20px', fontSize: '24px', color: '#ff5457' }}>Aviso de Responsabilidade</h2>
+            <div style={{ fontSize: '15px', lineHeight: '1.6', color: 'rgba(255,255,255,0.8)', marginBottom: '30px' }}>
+              <p>
+                O <strong>GLICO</strong> utiliza um modelo de inteligência artificial treinado com dados reais (do CDC dos EUA), mas seus resultados são <strong>estritamente matemáticos e analíticos</strong>.
+              </p>
+              <p>
+                <strong>Este sistema NÃO fornece diagnóstico médico</strong> e não substitui de forma alguma a avaliação de um profissional de saúde qualificado. Seu objetivo é apenas apontar métricas e destacar fatores de risco.
+              </p>
+              <p>
+                Em caso de dúvidas sobre sua saúde, procure sempre um médico especializado.
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '15px', justifyContent: 'flex-end' }}>
+              <button 
+                onClick={() => setShowTerms(false)} 
+                style={{ padding: '10px 20px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.3)', background: 'transparent', color: '#fff', cursor: 'pointer' }}
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={() => navigate('/formulario')} 
+                style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#00d2ff', color: '#000', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                Estou ciente e concordo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
