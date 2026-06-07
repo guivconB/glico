@@ -26,9 +26,7 @@ const SECRET = process.env.JWT_SECRET || "fallback_super_secreto";
 // Colleague's FastAPI python server runs on port 8000
 const PREDICTOR_URL = process.env.PREDICTOR_URL || 'http://localhost:8000';
 
-// ======================================================
 // HELPER: Map Age in years to CDC Age Category (1-13)
-// ======================================================
 function mapAgeToCategory(age) {
   const a = Number(age);
   if (!a || a < 18) return 1;
@@ -48,9 +46,7 @@ function mapAgeToCategory(age) {
   return 1;
 }
 
-// ======================================================
 // HELPER: Local prediction logic (fallback)
-// ======================================================
 function calculateLocalPrediction(features) {
   let score = 0;
   let explicacoes = [];
@@ -85,9 +81,7 @@ function calculateLocalPrediction(features) {
   return { risco_predito, probabilidade, explicacao: explicacaoFinal };
 }
 
-// ======================================================
 // HELPER: Connect with the Python FastAPI ML Model
-// ======================================================
 async function fetchPrediction(payload) {
   if (!PREDICTOR_URL) {
     // Generate fallback features
@@ -176,9 +170,7 @@ async function fetchPrediction(payload) {
   }
 }
 
-// ======================================================
 // MIDDLEWARE: Verificação de JWT
-// ======================================================
 function auth(req, res, next) {
   let token = req.cookies?.token;
   if (!token && req.headers.authorization) {
@@ -201,9 +193,7 @@ function auth(req, res, next) {
   }
 }
 
-// ======================================================
 // POST /api/auth/register — Cadastro de usuário
-// ======================================================
 app.post('/api/auth/register', async (req, res) => {
   const { nome, email, senha } = req.body;
 
@@ -233,9 +223,7 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
-// ======================================================
 // POST /api/auth/login — Login e geração de token
-// ======================================================
 app.post('/api/auth/login', async (req, res) => {
   const { email, senha } = req.body;
 
@@ -275,9 +263,7 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// ======================================================
 // POST /api/auth/logout — Limpa o cookie de sessão
-// ======================================================
 app.post('/api/auth/logout', (req, res) => {
   res.clearCookie('token', {
     httpOnly: true,
@@ -288,16 +274,12 @@ app.post('/api/auth/logout', (req, res) => {
   res.json({ mensagem: "Deslogado com sucesso" });
 });
 
-// ======================================================
 // GET /api/auth/me — Dados do usuário logado
-// ======================================================
 app.get('/api/auth/me', auth, (req, res) => {
   res.json({ usuario: req.usuario });
 });
 
-// ======================================================
 // POST /api/avaliacoes — Registrar avaliação
-// ======================================================
 app.post('/api/avaliacoes', auth, async (req, res) => {
   const respostas = req.body.respostas;
 
@@ -400,7 +382,7 @@ const { risco_predito, probabilidade, tipo_predicao, age_category, explicacao } 
       risco_predito,
       probabilidade,
       tipo_predicao,
-      explicacao // <-- ENVIANDO PARA O REACT AQUI
+      explicacao
     });
   } catch (err) {
     console.error("Erro ao registrar avaliação:", err);
@@ -408,9 +390,7 @@ const { risco_predito, probabilidade, tipo_predicao, age_category, explicacao } 
   }
 });
 
-// ======================================================
 // GET /api/avaliacoes — Histórico de avaliações do usuário
-// ======================================================
 app.get('/api/avaliacoes', auth, async (req, res) => {
   try {
     const [rows] = await pool.query(
@@ -423,9 +403,7 @@ app.get('/api/avaliacoes', auth, async (req, res) => {
     res.status(500).json({ erro: "Erro ao buscar histórico do banco de dados." });
   }
 });
-// ======================================================
 // GET /api/avaliacoes/historico — Dados para o Gráfico (Ordem Crescente)
-// ======================================================
 app.get('/api/avaliacoes/historico', auth, async (req, res) => {
   try {
     const [rows] = await pool.query(
@@ -439,9 +417,7 @@ app.get('/api/avaliacoes/historico', auth, async (req, res) => {
   }
 });
 
-// ======================================================
 // GET /api/avaliacoes/:id — Detalhe de uma avaliação específica
-// ======================================================
 app.get('/api/avaliacoes/:id', auth, async (req, res) => {
   const { id } = req.params;
   try {
@@ -461,9 +437,7 @@ app.get('/api/avaliacoes/:id', auth, async (req, res) => {
   }
 });
 
-// ======================================================
 // GET /api/status-preditor — Checa se a API de IA está ativa
-// ======================================================
 app.get('/api/status-preditor', async (req, res) => {
   if (!PREDICTOR_URL) {
     return res.json({ status: 'offline' });

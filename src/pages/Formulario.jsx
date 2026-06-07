@@ -236,7 +236,6 @@ export default function Formulario() {
           <nav>
             <Link to="/dashboard">Dashboard</Link>
             <Link to="/formulario" className="ativo">Formulário</Link>
-            <Link to="/resultados">Resultados</Link>
           </nav>
           <div className="status-ia-container">
             <span className={`status-ia-dot ${statusIa === 'ativo' ? 'online' : 'offline'}`} />

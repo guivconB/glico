@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'; // <-- NOVO IMPORT
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import './Dashboard.css';
 
 const API_URL = 'http://localhost:3001';
@@ -12,7 +12,7 @@ export default function Dashboard() {
   const nome = localStorage.getItem('nome');
 
   const [historico, setHistorico] = useState([]);
-  const [dadosGrafico, setDadosGrafico] = useState([]); // <-- NOVO ESTADO
+  const [dadosGrafico, setDadosGrafico] = useState([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState('');
   const [statusIa, setStatusIa] = useState('offline');
@@ -72,7 +72,6 @@ export default function Dashboard() {
       if (response.ok) {
         const data = await response.json();
         
-        // Dica de Ouro: Formatando a data e os valores
         const formatado = data.map(item => {
           const dataObj = new Date(item.data_avaliacao);
           // Pega o dia com 2 dígitos e o mês abreviado (ex: 12/mai)
@@ -118,7 +117,6 @@ export default function Dashboard() {
         <nav className="dashboard-nav">
           <Link to="/"           className={`nav-link ${location.pathname === '/'           ? 'active' : ''}`}>Home</Link>
           <Link to="/formulario" className={`nav-link ${location.pathname === '/formulario' ? 'active' : ''}`}>Formulário</Link>
-          <Link to="/resultados" className={`nav-link ${location.pathname === '/resultados' ? 'active' : ''}`}>Resultados</Link>
           <Link to="/dashboard"  className={`nav-link ${location.pathname === '/dashboard'  ? 'active' : ''}`}>Dashboard</Link>
         </nav>
         <div className="dashboard-header-right">

@@ -37,7 +37,6 @@ export default function Resultados() {
         <nav className="resultados-nav">
           <Link to="/dashboard">Dashboard</Link>
           <Link to="/formulario">Formulário</Link>
-          <Link to="/resultados" className="ativo">Resultados</Link>
         </nav>
       </header>
 

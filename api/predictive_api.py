@@ -129,10 +129,8 @@ def predict(request: PredictionRequest):
         probabilities = []
         risk_score = 0
 
-    # ====================================================
-    # NOVO: EXPLAINABLE AI COM SHAP
-    # ====================================================
-    explicacoes = []
+        # NOVO: EXPLAINABLE AI COM SHAP
+        explicacoes = []
     try:
         explainer = shap.TreeExplainer(MODEL)
         shap_vals = explainer.shap_values(np.array([feature_vector]))
